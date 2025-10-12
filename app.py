@@ -171,6 +171,12 @@ def apply_custom_css():
             margin: 2rem 0;
             flex-wrap: wrap;
         }
+        
+        /* Fix for Streamlit Cloud compatibility */
+        .stAlert {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
     """, unsafe_allow_html=True)
 
@@ -233,7 +239,7 @@ def show_public_landing():
     </div>
     """, unsafe_allow_html=True)
     
-    # Hero Description - THIS IS THE MISSING PART!
+    # Hero Description
     st.markdown("""
     <div class="hero-description">
         Leverage advanced machine learning to predict crime patterns, analyze risk factors, 
@@ -256,7 +262,6 @@ def show_public_landing():
     
     with col3:
         if st.button("🚀 Learn More", use_container_width=True, key="hero_learn"):
-            # Just show a message for now
             st.info("Scroll down to see all features!")
     
     st.markdown('</div>', unsafe_allow_html=True)
@@ -447,21 +452,34 @@ def show_authenticated_landing():
 
 def main():
     # Initialize session state
-    initialize_session_state()
+    try:
+        initialize_session_state()
+    except Exception as e:
+        st.error(f"Session initialization error: {e}")
     
     # Apply custom CSS
     apply_custom_css()
     
     # Show appropriate sidebar based on authentication
-    if is_authenticated():
-        show_user_sidebar()
-    else:
+    try:
+        if is_authenticated():
+            show_user_sidebar()
+        else:
+            show_public_sidebar()
+    except Exception as e:
+        st.error(f"Sidebar error: {e}")
+        # Fallback to public sidebar
         show_public_sidebar()
     
     # Show appropriate landing page
-    if is_authenticated():
-        show_authenticated_landing()
-    else:
+    try:
+        if is_authenticated():
+            show_authenticated_landing()
+        else:
+            show_public_landing()
+    except Exception as e:
+        st.error(f"Content loading error: {e}")
+        # Fallback to public landing
         show_public_landing()
     
     # Footer
